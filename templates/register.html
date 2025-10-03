@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Voting - Register</title>
+    <link rel="stylesheet" href=" style.css ">
+</head>
+<body>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h3 class="mb-3 text-center">User Registration</h3>
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Aadhaar</label>
+                    <input type="text" id="aadhaar" class="form-control" maxlength="12" required>
+                    <div class="form-text">Must be 12 digits</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</b>
+                     </form>
+            <div id="regResult" class="mt-3"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const aadhaar = document.getElementById("aadhaar").value;
+            const name = document.getElementById("name").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ aadhaar, name, password })
+            });
+
+            const data = await response.json();
+            const msgDiv = document.getElementById("message");
+            if (response.ok) {
+                msgDiv.innerHTML = <p class="success">${data.message}</p>;
+                document.getElementById("registerForm").reset();
+            } else {
+                msgDiv.innerHTML = <p class="error">${data.error}</p>;
+            }
+        });
+    </script>
+</body>
+</html>

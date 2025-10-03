@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Registration</title>
+</head>
+<body>
+  <h2>Register Face</h2>
+  <input type="text" id="aadhaar" placeholder="Enter Aadhaar" required>
+  <video id="video" width="320" height="240" autoplay></video>
+  <button onclick="capture()">Capture & Save</button>
+  <p id="message"></p>
+
+  <script>
+    const video = document.getElementById("video");
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    async function capture() {
+      let canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+
+      let aadhaar = document.getElementById("aadhaar").value;
+      let image = canvas.toDataURL("image/png");
+
+      let res = await fetch("/api/face-register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({aadhaar, image})
+      });
+
+ let data = await res.json();
+      document.getElementById("message").innerText = data.message || data.error;
+    }
+  </script>
+</body>
+</html>

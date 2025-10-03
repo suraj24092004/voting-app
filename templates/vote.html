@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cast Your Vote</title>
+</head>
+<body>
+  <h2>Voting Page</h2>
+  <input type="text" id="aadhaar" placeholder="Enter Aadhaar" required>
+
+  <h3>Select Candidate</h3>
+  <ul>
+    {% for c in candidates %}
+      <li>
+        {{ c.name }} ({{ c.party }})
+        <button onclick="vote('{{c.id}}')">Vote</button>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p id="message"></p>
+
+  <script>
+    async function vote(candidate_id) {
+      let aadhaar = document.getElementById("aadhaar").value;
+      let res = await fetch("/api/vote", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({aadhaar, candidate_id})
+      });
+      let data = await res.json();
+      document.getElementById("message").innerText = data.message || data.error;
+    }
+  </script>
+</body>
+</html>

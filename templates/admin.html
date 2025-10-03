@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>Admin Panel</h2>
+  <form id="candidateForm">
+    <input type="text" id="name" placeholder="Candidate Name" required>
+    <input type="text" id="party" placeholder="Party Name" required>
+    <button type="submit">Add Candidate</button>
+  </form>
+  
+  <h3>Live Results</h3>
+  <div id="results"></div>
+
+  <h3>Vote Distribution (Pie Chart)</h3>
+  <canvas id="pieChart" width="400" height="200"></canvas>
+
+  <h3>Vote Comparison (Bar Chart)</h3>
+  <canvas id="barChart" width="400" height="200"></canvas>
+<script>
+    let pieChart, barChart;
+
+    document.getElementById("candidateForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      let name = document.getElementById("name").value;
+      let party = document.getElementById("party").value;
+
+      let res = await fetch("/api/add-candidate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, party})
+      });
+
+      let data = await res.json();
+      alert(data.message);
+      loadResults();
+    });
+
+    async function loadResults() {
+      let res = await fetch("/api/results");
+      let data = await res.json();
+
+      // Show text results
+      let html = "<ul>";
+      data.forEach(c => {
+        html += <li>${c.name} (${c.party}) - ${c.votes} votes</li>;
+      });
+      html += "</ul>";
+      document.getElementById("results").innerHTML = html;
+
+      // Prepare chart data
+      let labels = data.map(c => c.name + " (" + c.party + ")");
+      let votes = data.map(c => c.votes);
+
+      // Pie Chart
+   if (pieChart) pieChart.destroy();
+      pieChart = new Chart(document.getElementById("pieChart"), {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: votes,
+            backgroundColor: ["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF"]
+          }]
+        }
+      });
+
+      // Bar Chart
+      if (barChart) barChart.destroy();
+      barChart = new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Votes",
+            data: votes,
+            backgroundColor: "#36A2EB"
+          }]
+        },
+        options: {   scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    setInterval(loadResults, 3000); // auto refresh every 3 sec
+    loadResults();
+  </script>
+</body>
+</html>
+
